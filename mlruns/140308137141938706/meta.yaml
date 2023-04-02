@@ -1,0 +1,6 @@
+artifact_location: mlflow-artifacts:/140308137141938706
+creation_time: 1680444562206
+experiment_id: '140308137141938706'
+last_update_time: 1680444562206
+lifecycle_stage: active
+name: Baseline model

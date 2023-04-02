@@ -87,30 +87,17 @@ def training_pipeline(config: DictConfig):
         model_dir.mkdir()
 
         model_file_name = config["mlflow"]["model_name"]
-        # model_save_path = Path(os.sep.join([model_dir, model_file_name]))
         model_save_path = f'{model_dir}\{model_file_name}'
         model.save(model_save_path)
-        print(model_dir)
-        print(model_save_path)
-        # mlflow.keras.save_model(model, model_save_path)
-        # mlflow.keras.log_model(model, model_save_path)
         mlflow.log_artifact(model_save_path)
-
         mlflow.log_params(config['model']["model_params"])
         mlflow.log_params(config["training_params"])
-        # joblib.dump(model, model_save_path)
-        # mlflow.log_artifact(model_save_path, "model")
-        # mlflow.register_model(model_uri=model_uri, name=artifact_name)
-        # model_uri = f"runs:/{run.info.run_id}/model/{model_file_name}"
-        # os.environ["MODEL_URI"] = model_uri
-        # logger.info(f"Model available at {model_uri}")
 
         logger.info("Saving metrics and model performance...")
         mlflow.log_metrics(final_metrics)
         mlflow.log_metrics(test_metrics)
         mlflow.log_artifacts(visualizations_save_dir)
         graph_uri = f"runs:/{run.info.run_id}/graph"
-        os.environ["GRAPH_URI"] = graph_uri
         logger.info(f"Model performance visualisation available at {graph_uri}")
         mlflow.end_run()
 

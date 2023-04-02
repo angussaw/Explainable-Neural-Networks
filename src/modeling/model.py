@@ -8,6 +8,7 @@ from typing import List
 
 
 def build_model(model_params: dict,
+                model_architecture_params: dict, 
                 rescale_params: dict,
                 data_augmentation: dict,
                 metrics: List):
@@ -22,26 +23,26 @@ def build_model(model_params: dict,
     Returns:
         _type_: _description_
     """
-
-    data_augmentation = tf.keras.Sequential([tf.keras.layers.RandomFlip(data_augmentation["random_flip"]),
-                                             tf.keras.layers.RandomRotation(data_augmentation["random_rotation"])
-                                            ])
     
-    rescale = tf.keras.layers.Rescaling(1./255)
+    inputs = tf.keras.layers.Input(shape=(rescale_params["img_height"], rescale_params["img_height"], 3))
+    augmented = tf.keras.layers.RandomFlip(data_augmentation["random_flip"])(inputs)
+    augmented = tf.keras.layers.RandomRotation(data_augmentation["random_rotation"])(augmented)
+    rescale = tf.keras.layers.Rescaling(1./255)(augmented)
 
-    base_model = tf.keras.applications.MobileNetV2(input_shape=(rescale_params["img_height"], 
-                                                                rescale_params["img_width"], 3),
-                                                    include_top=False,
-                                                    weights='imagenet')
+    base_model = tf.keras.applications.MobileNetV2(input_tensor=rescale,
+                                                include_top=False,
+                                                weights='imagenet')
     base_model.trainable = False
 
-    model = tf.keras.Sequential([tf.keras.layers.Input(shape=(rescale_params["img_height"], rescale_params["img_width"], 3)),
-                                data_augmentation,
-                                rescale,
-                                base_model,
-                                tf.keras.layers.GlobalMaxPooling2D(),
-                                tf.keras.layers.Dropout(model_params["dropout"]),
-                                tf.keras.layers.Dense(1, activation="sigmoid")])
+    pooling = tf.keras.layers.GlobalMaxPooling2D()(base_model.layers[-1].output)
+    dropout = tf.keras.layers.Dropout(model_params["dropout"])(pooling)
+
+    dense_output = dropout
+    for i in range(model_architecture_params["n_layers"]):
+        dense_output =  tf.keras.layers.Dense(model_architecture_params["n_nodes"], activation="relu")(dense_output)
+
+    final_output = tf.keras.layers.Dense(1, activation="sigmoid")(dense_output)
+    model = tf.keras.models.Model(inputs=inputs, outputs=final_output)
 
     model.compile(loss=model_params["loss_function"],
                     optimizer=model_params["optimizer"],
