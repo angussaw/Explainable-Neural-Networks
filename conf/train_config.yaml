@@ -8,7 +8,7 @@ model:
     loss_function: "binary_crossentropy"
 
   model_architecture_params:
-    n_layers: 3
+    n_layers: 1
     n_nodes: 8
 
   rescale_params:
@@ -28,7 +28,7 @@ model:
 training_params:
   validation_split: 0.2
   batch_size: 100
-  n_epochs: 10
+  n_epochs: 5
 
 mlflow:
   artifact_name: 'baseline-model'
