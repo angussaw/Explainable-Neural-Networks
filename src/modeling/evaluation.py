@@ -13,6 +13,7 @@ from sklearn.metrics import (
     recall_score,
     confusion_matrix
 )
+from sklearn.preprocessing import label_binarize
 import numpy as np
 import tensorflow as tf
 
@@ -53,7 +54,7 @@ class Evaluator:
             plt.plot(history[metric], label=metric)
             plt.plot(history[val_metric], label=val_metric)
             plt.legend([metric, val_metric], loc="upper left", prop={"size": 8})
-            plot_name = f"Training and validation accuracy"
+            plot_name = f"Training and validation {metric}"
             plt.title(plot_name)
             file_name = f"{plot_name}.png"
             file_save_path = f"{visualizations_save_dir}/{file_name}"
@@ -67,25 +68,17 @@ class Evaluator:
         test_labels =  np.array([])
         for x, y in test_data:
             test_img_arrays = test_img_arrays + tf.unstack(x)
-            prediction_prob = self.model.predict(x).flatten()
-            test_predictions = np.concatenate([test_predictions, tf.where(prediction_prob < 0.5, 0, 1)])
-            test_labels = np.concatenate([test_labels, y.numpy()])
+            test_prediction_probs = self.model.predict(x)
+            test_predictions = np.concatenate([test_predictions, test_prediction_probs.argmax(axis=1)])
+            test_labels = np.concatenate([test_labels, y.numpy().argmax(axis=1)])
 
-        test_true_positives = np.where((test_labels == 1) & (test_predictions == 1))[0]
-        test_false_positives = np.where((test_labels == 0) & (test_predictions == 1))[0]
-        test_true_negatives = np.where((test_labels == 0) & (test_predictions == 0))[0]
-        test_false_negatives = np.where((test_labels == 1) & (test_predictions == 0))[0]
-
-        test_outcomes_dict = {"True Positives":test_true_positives,
-                              "False Positives": test_false_positives,
-                              "True Negatives": test_true_negatives, 
-                              "False Negatives": test_false_negatives}
-        
+        test_labels_binarized = label_binarize(test_labels, classes=list(range(len(test_data.class_names))))
+        test_predictions_binarized = label_binarize(test_predictions, classes=list(range(len(test_data.class_names))))
         test_metrics = {
             "test_accuracy": accuracy_score(test_labels, test_predictions),
-            "test_precision": precision_score(test_labels, test_predictions),
-            "test_recall": recall_score(test_labels, test_predictions),
-            "test_auc": roc_auc_score(test_labels, test_predictions)}
+            "test_precision": precision_score(test_labels, test_predictions, average = 'weighted'),
+            "test_recall": recall_score(test_labels, test_predictions, average = 'weighted'),
+            "test_auc": roc_auc_score(test_labels_binarized, test_predictions_binarized, average = 'weighted', multi_class='ovr')}
         
         ConfusionMatrixDisplay.from_predictions(test_labels, test_predictions, display_labels=test_data.class_names)
         plot_name = f"Confusion_Matrix (test data)"
@@ -94,22 +87,39 @@ class Evaluator:
         file_save_path = f"{visualizations_save_dir}/{file_name}"
         plt.savefig(file_save_path, bbox_inches="tight")
 
-        for outcome in test_outcomes_dict:
-            sample_img_indexes = list(np.random.choice(test_outcomes_dict[outcome], size=9))
-            sample_test_img_arrays = [test_img_arrays[i] for i in sample_img_indexes]
-            sample_test_prediction_probabilities = [self.model.predict(np.expand_dims(img_array, axis=0))[0][0] for img_array in sample_test_img_arrays]
-            sample_test_predictions = test_predictions[sample_img_indexes]
-            sample_test_labels = test_labels[sample_img_indexes]
-            plot_name = f"Sample Grad-CAM visualizations on test data ({outcome})"
+        all_test_outcomes_dict = {}
+        for i in range(len(test_data.class_names)):
 
-            self.generate_gradcam_visualizations(plot_name = plot_name,
-                                                 sample_test_img_arrays = sample_test_img_arrays,
-                                                 sample_test_prediction_probabilities = sample_test_prediction_probabilities,
-                                                 sample_test_predictions = sample_test_predictions,
-                                                 sample_test_labels = sample_test_labels)
-            file_name = f"{plot_name}.png"
-            file_save_path = f"{visualizations_save_dir}/{file_name}"
-            plt.savefig(file_save_path)
+            test_true_positives = np.where((test_labels == i) & (test_predictions == i))[0]
+            test_false_positives = np.where((test_labels != i) & (test_predictions == i))[0]
+            test_true_negatives = np.where((test_labels != i) & (test_predictions != i))[0]
+            test_false_negatives = np.where((test_labels == i) & (test_predictions != i))[0]
+
+            all_test_outcomes_dict[test_data.class_names[i]] = {"True Positives":test_true_positives,
+                                                                "False Positives": test_false_positives,
+                                                                "True Negatives": test_true_negatives, 
+                                                                "False Negatives": test_false_negatives}
+
+        for class_name in all_test_outcomes_dict:
+            test_outcomes_dict = all_test_outcomes_dict[class_name]
+            for outcome in test_outcomes_dict:
+                sample_img_indexes = list(np.random.choice(test_outcomes_dict[outcome], size=9))
+                sample_test_img_arrays = [test_img_arrays[i] for i in sample_img_indexes]
+                sample_test_prediction_probabilities = [max(self.model.predict(np.expand_dims(img_array, axis=0))[0]) for img_array in sample_test_img_arrays]
+                sample_test_predictions = [test_data.class_names[int(i)] for i in test_predictions[sample_img_indexes]]
+                sample_test_labels = [test_data.class_names[int(i)] for i in test_labels[sample_img_indexes]]
+
+
+                plot_name = f"Sample Grad-CAM visualizations on test data ({class_name}-{outcome})"
+
+                self.generate_gradcam_visualizations(plot_name = plot_name,
+                                                        sample_test_img_arrays = sample_test_img_arrays,
+                                                        sample_test_prediction_probabilities = sample_test_prediction_probabilities,
+                                                        sample_test_predictions = sample_test_predictions,
+                                                        sample_test_labels = sample_test_labels)
+                file_name = f"{plot_name}.png"
+                file_save_path = f"{visualizations_save_dir}/{file_name}"
+                plt.savefig(file_save_path)
 
         return final_metrics, test_metrics, visualizations_save_dir
     
@@ -177,11 +187,11 @@ class Evaluator:
 
         # Create an image with RGB colorized heatmap
         jet_heatmap = tf.keras.preprocessing.image.array_to_img(jet_heatmap)
-        jet_heatmap = jet_heatmap.resize((img_array.shape[1], img_array.shape[0]))
+        jet_heatmap = jet_heatmap.resize((img_array.shape[0], img_array.shape[1]))
         jet_heatmap = tf.keras.preprocessing.image.img_to_array(jet_heatmap)
 
         # Superimpose the heatmap on original image
-        superimposed_img = jet_heatmap * alpha + np.squeeze(img_array)
+        superimposed_img = jet_heatmap * alpha + img_array
         superimposed_img = tf.keras.preprocessing.image.array_to_img(superimposed_img)
 
         return superimposed_img
@@ -202,19 +212,20 @@ class Evaluator:
         
         fig, axes = plt.subplots(3,3, figsize=(18,18))
         fig.suptitle(plot_name)
-        sample_test_predictions = np.where(sample_test_predictions == 1.0, "PNEUMONIA", "NORMAL")
-        sample_test_labels = np.where(sample_test_labels == 1.0, "PNEUMONIA", "NORMAL")
 
         for i in range(len(sample_test_img_arrays)):
 
-            img_array = np.expand_dims(sample_test_img_arrays[i], axis=0)
+            img_array = sample_test_img_arrays[i]
             prediction_prob = sample_test_prediction_probabilities[i]
             prediction = sample_test_predictions[i]
             label = sample_test_labels[i]
 
-            heatmap = self.make_gradcam_heatmap(img_array = img_array)
+            heatmap = self.make_gradcam_heatmap(img_array = np.expand_dims(img_array, axis=0))
             heatmap = np.uint8(255 * heatmap)
-            superimposed_img = self.generate_superimposed_image(img_array = img_array, heatmap = heatmap)
+            img_array_resized = tf.keras.preprocessing.image.array_to_img(img_array)
+            img_array_resized = img_array_resized.resize((224, 224))
+            img_array_resized = tf.keras.preprocessing.image.img_to_array(img_array_resized)
+            superimposed_img = self.generate_superimposed_image(img_array = img_array_resized, heatmap = heatmap)
 
             axes[i//3, i%3].imshow(superimposed_img)
             axes[i//3, i%3].set_title(f"Actual: {label}, Predicted: {prediction}\nProbability: {prediction_prob}")

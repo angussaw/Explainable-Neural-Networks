@@ -5,7 +5,7 @@ model:
   model_params:
     dropout: 0.2
     optimizer: "adam"
-    loss_function: "binary_crossentropy"
+    loss_function: "categorical_crossentropy"
 
   model_architecture_params:
     n_layers: 1
@@ -28,7 +28,7 @@ model:
 training_params:
   validation_split: 0.2
   batch_size: 100
-  n_epochs: 5
+  n_epochs: 8
 
 mlflow:
   artifact_name: 'baseline-model'

@@ -36,6 +36,7 @@ def training_pipeline(config: DictConfig):
     logger.info("Generating image datasets...")
     training_dataset = tf.keras.utils.image_dataset_from_directory(directory=f'{data_dir}/train',
                                                                     labels="inferred",
+                                                                    label_mode="categorical",
                                                                     color_mode="rgb",
                                                                     validation_split=validation_split,
                                                                     subset="training",
@@ -45,6 +46,7 @@ def training_pipeline(config: DictConfig):
 
     validation_dataset = tf.keras.utils.image_dataset_from_directory(directory=f'{data_dir}/train',
                                                                     labels="inferred",
+                                                                    label_mode="categorical",
                                                                     color_mode="rgb",
                                                                     validation_split=validation_split,
                                                                     subset="validation",
@@ -54,6 +56,7 @@ def training_pipeline(config: DictConfig):
 
     test_dataset = tf.keras.utils.image_dataset_from_directory(directory=f'{data_dir}/test',
                                                                 labels="inferred",
+                                                                label_mode="categorical",
                                                                 color_mode="rgb",
                                                                 image_size=(img_height, img_width),
                                                                 batch_size = batch_size)
