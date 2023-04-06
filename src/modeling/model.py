@@ -37,9 +37,7 @@ def build_model(model_params: dict,
     pooling = tf.keras.layers.GlobalMaxPooling2D()(base_model.layers[-1].output)
     dropout = tf.keras.layers.Dropout(model_params["dropout"])(pooling)
 
-    # dense_output = dropout
-    # for i in range(model_architecture_params["n_layers"]):
-    #     dense_output =  tf.keras.layers.Dense(model_architecture_params["n_nodes"], activation="relu")(dense_output)
+    # dense_output =  tf.keras.layers.Dense(model_architecture_params["n_nodes"], activation="relu")(dropout)
 
     final_output = tf.keras.layers.Dense(3, activation="softmax")(dropout)
     model = tf.keras.models.Model(inputs=inputs, outputs=final_output)

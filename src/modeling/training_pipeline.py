@@ -70,10 +70,8 @@ def training_pipeline(config: DictConfig):
                         validation_data=validation_dataset)
     
     logger.info("Evaluating Model...")
-    evaluator = Evaluator(model=model)
-    final_metrics, test_metrics, visualizations_save_dir = evaluator.evaluate_model(metrics=config["model"]["metrics"],
-                                                            history=pd.DataFrame(history.history),
-                                                            test_data=test_dataset)
+    evaluator = Evaluator(model=model, test_data=test_dataset, history=pd.DataFrame(history.history))
+    final_metrics, test_metrics, visualizations_save_dir = evaluator.evaluate_model(metrics=config["model"]["metrics"])
 
     logger.info("Intialise MLFlow...")
     artifact_name, description_str = init_mlflow(config["mlflow"])
