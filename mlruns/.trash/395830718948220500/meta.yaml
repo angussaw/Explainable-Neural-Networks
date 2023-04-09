@@ -1,0 +1,7 @@
+artifact_location: mlflow-artifacts:/395830718948220500
+creation_time: 1680841557487
+experiment_id: '395830718948220500'
+last_update_time: 1680859501174
+lifecycle_stage: active
+name: Baseline model (4 layers, 15 nodes)
+tags: {}

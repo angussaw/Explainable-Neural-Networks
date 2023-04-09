@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/395830718948220500/60f267f0467845efb49da7cc3b6dfbb2/artifacts
+end_time: 1680841574968
+entry_point_name: ''
+experiment_id: '395830718948220500'
+lifecycle_stage: active
+run_id: 60f267f0467845efb49da7cc3b6dfbb2
+run_name: Model Training
+run_uuid: 60f267f0467845efb49da7cc3b6dfbb2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1680841557907
+status: 3
+tags: []
+user_id: angus

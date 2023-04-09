@@ -76,7 +76,7 @@ def training_pipeline(config: DictConfig):
     logger.info("Intialise MLFlow...")
     artifact_name, description_str = init_mlflow(config["mlflow"])
     with mlflow.start_run(
-        run_name="Model Training", description=description_str) as run:
+        run_name=config["mlflow"]["run_name"], description=description_str) as run:
     
         logger.info("Starting MLFlow Run...")
 

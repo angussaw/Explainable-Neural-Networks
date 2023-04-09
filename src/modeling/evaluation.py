@@ -133,8 +133,8 @@ class Evaluator:
         """
 
         class_true_positives = np.where((labels == class_index) & (predictions == class_index))[0]
-        class_false_positives = np.where((labels != class_index) & (predictions == class_index))[0]
         class_true_negatives = np.where((labels != class_index) & (predictions != class_index))[0]
+        class_false_positives = np.where((labels != class_index) & (predictions == class_index))[0]
         class_false_negatives = np.where((labels == class_index) & (predictions != class_index))[0]
 
         class_outcomes = {"True Positives":class_true_positives,

@@ -16,8 +16,14 @@ model:
     img_width: 224
 
   data_augmentation:
-    random_flip: "horizontal"
-    random_rotation: 0.2
+    random_flip: "horizontal_and_vertical"
+    random_rotation: 0.4
+    random_contrast: 0.3
+    random_crop_height: 180
+    random_crop_width: 180
+    random_zoom_in: -0.3
+    random_zoom_out: 0.3
+    
 
   metrics:
     - 'accuracy'
@@ -28,12 +34,13 @@ model:
 training_params:
   validation_split: 0.2
   batch_size: 100
-  n_epochs: 20
+  n_epochs: 50
 
 mlflow:
   artifact_name: 'baseline-model'
   tracking_uri: "http://127.0.0.1:5000"
   experiment_name: "Baseline model"
+  run_name: "6 layers, 15 nodes (with image augmentation)"
   description: 'Training baseline model'
   model_name: finalized_model
   model_save_dir: ""

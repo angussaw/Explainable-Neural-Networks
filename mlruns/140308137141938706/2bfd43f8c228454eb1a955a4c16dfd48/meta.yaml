@@ -1,0 +1,16 @@
+artifact_uri: mlflow-artifacts:/140308137141938706/2bfd43f8c228454eb1a955a4c16dfd48/artifacts
+deleted_time: 1680878571896
+end_time: 1680878030107
+entry_point_name: ''
+experiment_id: '140308137141938706'
+lifecycle_stage: deleted
+run_id: 2bfd43f8c228454eb1a955a4c16dfd48
+run_name: 6 layers, 15 nodes (with image augmentation)
+run_uuid: 2bfd43f8c228454eb1a955a4c16dfd48
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1680878010862
+status: 3
+tags: []
+user_id: angus
