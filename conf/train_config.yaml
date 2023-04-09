@@ -8,7 +8,6 @@ model:
     loss_function: "categorical_crossentropy"
 
   model_architecture_params:
-    n_layers: 1
     n_nodes: 15
 
   rescale_params:
@@ -17,13 +16,7 @@ model:
 
   data_augmentation:
     random_flip: "horizontal_and_vertical"
-    random_rotation: 0.4
-    random_contrast: 0.3
-    random_crop_height: 180
-    random_crop_width: 180
-    random_zoom_in: -0.3
-    random_zoom_out: 0.3
-    
+    random_rotation: 0.4    
 
   metrics:
     - 'accuracy'

@@ -28,9 +28,6 @@ def build_model(model_params: dict,
     # Note: Data augmentation is inactive at test time so input images will only be augmented during calls to Model.fit (not Model.evaluate or Model.predict).
     augmented = tf.keras.layers.RandomFlip(data_augmentation["random_flip"])(inputs)
     augmented = tf.keras.layers.RandomRotation(data_augmentation["random_rotation"])(augmented)
-    # augmented = tf.keras.layers.RandomContrast(factor=data_augmentation["random_contrast"])(augmented)
-    # augmented = tf.keras.layers.RandomCrop(height=data_augmentation["random_crop_height"], width=data_augmentation["random_crop_width"])(augmented)
-    # augmented = tf.keras.layers.RandomZoom(height_factor=(data_augmentation["random_zoom_in"], data_augmentation["random_zoom_out"]))(augmented)
     rescale = tf.keras.layers.Rescaling(1./255)(augmented)
 
     base_model = tf.keras.applications.MobileNetV2(input_tensor=rescale,
