@@ -6,9 +6,11 @@
 
 ## Introduction
 
-The objective of this project is to develop a deep learning model to classify X-ray images into one of the three classes: normal, bacteria and virus for pneumonia detection
+Bacterial and viral pathogens are the two leading causes of pneumonia but require very different forms of management. Bacterial pneumonia requires urgent referral for immediate antibiotic treatment, while viral pneumonia is treated with supportive care. Therefore, accurate and timely diagnosis is imperative. One key element of diagnosis is radiographic data, since chest X-rays are routinely obtained as standard of care and can help differentiate between different types of pneumonia
 
-To understand the classifications made by the deep learning model and enhance explainability its black box nature, the visual explaination algorithm Gradient-weighted Class Activation Mapping (Grad-CAM) generates heatmaps that are superimposed on the test images to provide visual explainability on the model. The heatmap highlights the important regions in the X-ray image for predicting the classes.
+The objective of this project is to develop a transfer learning framework in classifying pediatric chest X-rays to detect pneumonia and furthermore to distinguish viral and bacterial pneumonia to facilitate rapid referrals for children needing urgent intervention.
+
+To understand the classifications made by the deep learning model and enhance explainability of its black box nature, the visual explaination algorithm Gradient-weighted Class Activation Mapping (Grad-CAM) generates heatmaps that are superimposed on the test images to provide visual explainability on the model. The heatmap highlights the important regions in the X-ray image for predicting the classes.
 ## Data
 
 ```bash
@@ -43,7 +45,7 @@ There are a total of 5216 and 624 images in the train and test set respectively.
 
 ![image info](./images/samples.png)
 
-
+The normal chest X-ray (middle panel) depicts clear lungs without any areas of abnormal opacification in the image. Bacterial pneumonia (left) typically exhibits a focal lobar consolidation, whereas viral pneumonia (right) manifests with a more diffuse ‘‘interstitial’’ pattern in both lungs.
 
 ## Model
 
@@ -63,14 +65,21 @@ The architecture of the model consists of:
 
 ## Evaluation of baseline model
 
+
+
+
 **Baseline model training parameters**
-|   |   |
-|---|---|
-|   |   |
-|   |   |
-|   |   |
-|   |   |
-|   |   |
+|                |                         |
+|----------------|-------------------------|
+|Batch size      |100                      |
+|Dropout         |0.2                      |
+|Loss function   |categorical crossentropy |
+|Epochs          |50                       |
+|Optimizer       |adam                     |
+|Learning rate   |0.001                    |
+
+
+
 
 **Confusion Matrix of test data**
 
@@ -80,14 +89,35 @@ The architecture of the model consists of:
 
 ![image info](./mlartifacts/140308137141938706/cab1e769583c4ce9a4a54141e0d79f57/artifacts/Test%20metrics%20for%20each%20class.png)
 
+For chest X-rays presenting as bacteria versus non-bacteria, the model achieved an accuracy of 86.4%, precision of 77.5% and recall of 91.3%
 
-### What the model did well
+For chest X-rays presenting as normal versus non-normal, the model achieved an accuracy of 88.5%, precision of 86.8% and recall of 81.6% 
+
+For chest X-rays presenting as virus versus non-virus, the model achieved an accuracy of 86.1%, precision of 75.6% and recall of 60.8%
+
+The model's overall accuracy, precision and recall on the test set is 80.4%, 80.6% and 80.4% respectively
+
+![image info](./mlartifacts/140308137141938706/cab1e769583c4ce9a4a54141e0d79f57/artifacts/Training%20and%20validation%20accuracy.png)
+
+![image info](./mlartifacts/140308137141938706/cab1e769583c4ce9a4a54141e0d79f57/artifacts/Training%20and%20validation%20precision.png)
+
+![image info](./mlartifacts/140308137141938706/cab1e769583c4ce9a4a54141e0d79f57/artifacts/Training%20and%20validation%20recall.png)
+
+![image info](./mlartifacts/140308137141938706/cab1e769583c4ce9a4a54141e0d79f57/artifacts/Training%20and%20validation%20auc.png)
+
+### **What the model did well**
+
+The model was able to classify most of the "BACTERIA" images correctly, achieving a recall of 91.3%.
+
+The model is very precise in its classification of "NORMAL" images. For the images that were correctly predicted to be the "NORMAL" class, the final convolution layer of the model mostly focused on parts of the X-ray that weren't on the lungs, instead primarily focusing on the mid-center section where the neck is located at.
 
 ![image info](./mlartifacts/140308137141938706/cab1e769583c4ce9a4a54141e0d79f57/artifacts/Sample%20Grad-CAM%20visualizations%20on%20test%20data%20(NORMAL-True%20Positives).png)
 
 
-### What the model didn't do well
+### **What the model didn't do well**
+
+The model incorrectly classified alot of "VIRUS" images as "BACTERIA", indicating that it was unable to differentiate "VIRUS" images from "BACTERIA" images. The section that the model's final convolutional layer focused on was inconsistent and random, being unable to focus on the diffuse interstitial pattern found in both lungs
 
 ![image info](./mlartifacts/140308137141938706/cab1e769583c4ce9a4a54141e0d79f57/artifacts/Sample%20Grad-CAM%20visualizations%20on%20test%20data%20(VIRUS-False%20Negatives).png)
 
-![image info](./mlartifacts/140308137141938706/cab1e769583c4ce9a4a54141e0d79f57/artifacts/Sample%20Grad-CAM%20visualizations%20on%20test%20data%20(BACTERIA-False%20Positives).png)
+
