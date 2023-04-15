@@ -21,13 +21,13 @@ logger = logging.getLogger(__name__)
 @hydra.main(
     config_path="../../conf", config_name="train_config.yaml"
 )
-def training_pipeline(config: DictConfig):
+def training_pipeline(config: DictConfig, mode: str):
     """_summary_
 
     Args:
-        config (dict): _description_
+        config (DictConfig): _description_
+        mode (str): _description_
     """
-    mode = os.getenv("MODE").lower()
     data_dir = config["files"]["data_dir"]
     model_params = config["model"]["model_params"]
     training_params = config["model"]["training_params"]
@@ -75,7 +75,7 @@ def training_pipeline(config: DictConfig):
         logger.info("Building Model...")
         model = build_model(**model_params)
 
-    elif mode == "fine_tuning":
+    elif mode == "fine-tuning":
         logger.info("Retrieving Model...")
         model = retrieve_model(**fine_tuning_params["retrieve_params"])
         model.trainable=True
@@ -90,14 +90,16 @@ def training_pipeline(config: DictConfig):
                   metrics=config["metrics"])
     
 
-    logger.info("Training Model...")
+    logger.info(f'Model {mode}...')
     history = model.fit(training_dataset,
                         epochs=training_params["n_epochs"],
                         validation_data=validation_dataset)
     
     logger.info("Evaluating Model...")
-    evaluator = Evaluator(model=model, test_data=test_dataset, history=pd.DataFrame(history.history))
-    final_metrics, test_metrics, visualizations_save_dir = evaluator.evaluate_model(metrics=config["metrics"])
+    evaluator = Evaluator(model=model)
+    final_metrics, test_metrics, visualizations_save_dir = evaluator.evaluate_model(metrics=config["metrics"],
+                                                                                    test_data = test_dataset,
+                                                                                    history=pd.DataFrame(history.history))
 
     with mlflow.start_run(
         run_name=config["mlflow"]["run_name"], description=description_str) as run:
@@ -125,10 +127,11 @@ def training_pipeline(config: DictConfig):
         logger.info(f"Model performance visualisation available at {graph_uri}")
         mlflow.end_run()
 
-        logger.info("Model training has completed!!!")
+        logger.info(f'Model {mode} has completed!!')
 
 if __name__ == "__main__":
-    with timer("Model training"):
+    mode = os.getenv("MODE").lower()
+    with timer(f'Model {mode}'):
         setup_logging()
         training_pipeline()
 

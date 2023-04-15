@@ -7,6 +7,7 @@ import seaborn as sns
 from typing import List
 import mlflow
 import os
+import streamlit as st
 
 
 def build_model(model_architecture_params: dict, 
@@ -49,7 +50,7 @@ def build_model(model_architecture_params: dict,
 
     return model
 
-
+@st.cache_resource
 def retrieve_model(run_id: str,
                    model_uri: str,
                    model_name: str,

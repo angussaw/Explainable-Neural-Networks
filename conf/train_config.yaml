@@ -24,7 +24,7 @@ model:
   training_params:
     validation_split: 0.2
     batch_size: 300
-    n_epochs: 25
+    n_epochs: 1
 
 metrics:
   - 'accuracy'
@@ -34,7 +34,6 @@ metrics:
 
 mlflow:
   artifact_name: 'baseline-model'
-  tracking_uri: "http://127.0.0.1:5000"
   experiment_name: "Fine tuned model"
   run_name: "Fine tuning"
   description: 'Fine tuning baseline model'

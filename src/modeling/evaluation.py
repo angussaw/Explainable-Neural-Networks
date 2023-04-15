@@ -24,13 +24,9 @@ class Evaluator:
     def __init__(
         self,
         model,
-        test_data,
-        history: pd.DataFrame,
         ) -> None:
         
         self.model = model
-        self.test_data = test_data
-        self.history = history
         self.last_conv_layer_name = list(filter(lambda x: isinstance(x, tf.keras.layers.Conv2D), self.model.layers))[-1].name
         tmp_dir = tempfile.mkdtemp()
         self.visualizations_save_dir = Path(os.sep.join([tmp_dir, "graph"]))
@@ -38,7 +34,9 @@ class Evaluator:
 
     def evaluate_model(
         self,
-        metrics
+        metrics,
+        test_data,
+        history
         ):
     
         """
@@ -47,11 +45,11 @@ class Evaluator:
 
         """
 
-        class_names = self.test_data.class_names
+        class_names = test_data.class_names
         test_img_arrays = []
         test_predictions = np.array([])
         test_labels =  np.array([])
-        for x, y in self.test_data:
+        for x, y in test_data:
             test_img_arrays = test_img_arrays + tf.unstack(x)
             test_prediction_probs = self.model.predict(x)
             test_predictions = np.concatenate([test_predictions, test_prediction_probs.argmax(axis=1)])
@@ -80,9 +78,9 @@ class Evaluator:
                                        predictions = test_predictions)
         
         for metric in metrics:
-            self.generate_epochs_visualization(history = self.history, metric = metric)
+            self.generate_epochs_visualization(history = history, metric = metric)
 
-        final_metrics = dict(self.history.iloc[-1,:])
+        final_metrics = dict(history.iloc[-1,:])
 
         test_metrics = self.calculate_test_metrics(class_names = class_names,
                                                    labels = test_labels,
@@ -209,11 +207,12 @@ class Evaluator:
                                                             **samples)
                 self.save_visualization(plot_name = plot_name)
 
-    def make_gradcam_heatmap(self, img_array, pred_index=None):
+    def make_gradcam_heatmap(self, img_array, conv_layer_name, pred_index=None):
         """_summary_
 
         Args:
             img_array (_type_): _description_
+            conv_layer (_type_): _description_
             pred_index (_type_, optional): _description_. Defaults to None.
 
         Returns:
@@ -223,7 +222,7 @@ class Evaluator:
         # of the last conv layer as well as the output predictions
         # self.model.layers[-1].activation = None
         grad_model = tf.keras.models.Model(
-            [self.model.inputs], [self.model.get_layer(self.last_conv_layer_name).output, self.model.output]
+            [self.model.inputs], [self.model.get_layer(conv_layer_name).output, self.model.output]
         )
 
         # Then, we compute the gradient of the top predicted class for our input image
@@ -306,7 +305,7 @@ class Evaluator:
             prediction = sample_test_predictions[i]
             label = sample_test_labels[i]
 
-            heatmap = self.make_gradcam_heatmap(img_array = np.expand_dims(img_array, axis=0))
+            heatmap = self.make_gradcam_heatmap(img_array = np.expand_dims(img_array, axis=0), conv_layer_name = self.last_conv_layer_name)
             heatmap = np.uint8(255 * heatmap)
             img_array_resized = tf.keras.preprocessing.image.array_to_img(img_array)
             img_array_resized = img_array_resized.resize((224, 224))

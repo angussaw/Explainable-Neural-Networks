@@ -17,6 +17,7 @@ import pandas as pd
 import numpy as np
 import yaml
 import mlflow
+import streamlit as st
 
 logger = logging.getLogger(__name__)
 
@@ -80,8 +81,8 @@ def init_mlflow(mlflow_config: dict) -> Tuple[str, str]:
 
         description (str): Description of the mlflow run, if any.
     """
-
-    mlflow_tracking_uri = mlflow_config["tracking_uri"]
+    # tracking_uri: "http://127.0.0.1:5000"
+    mlflow_tracking_uri =  os.getenv("MLFLOW_TRACKING_URI")
     mlflow.set_tracking_uri(mlflow_tracking_uri)
     logger.info("Logging to MLFlow at %s", mlflow_tracking_uri)
 
@@ -95,3 +96,6 @@ def init_mlflow(mlflow_config: dict) -> Tuple[str, str]:
         hashlib.sha1().update(str(time.time()).encode("utf-8"))
         artifact_name = hashlib.sha1().hexdigest()[:15]
     return artifact_name, mlflow_config.get("description", "")
+
+
+    
