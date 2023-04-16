@@ -1,20 +1,18 @@
-import tensorflow as tf
+import hydra
+import logging
+import mlflow
+from omegaconf import DictConfig
+import os
 import pandas as pd
-from src.modeling.model import build_model, retrieve_model
+from pathlib import Path
 from src.modeling.evaluation import Evaluator
+from src.modeling.model import build_model, retrieve_model
 from src.utils import (
     timer,
     setup_logging,
     init_mlflow,
 )
-import os
-from pathlib import Path
-import joblib
-import hydra
-import mlflow
-import mlflow.keras
-from omegaconf import DictConfig
-import logging
+import tensorflow as tf
 
 logger = logging.getLogger(__name__)
 
@@ -106,9 +104,7 @@ def training_pipeline(config: DictConfig, mode: str):
         logger.info("Starting MLFlow Run...")
 
         logger.info("Saving model and params...")
-        print(visualizations_save_dir)
         save_dir = os.path.dirname(visualizations_save_dir)
-        print(save_dir)
         model_dir = Path(os.sep.join([save_dir, "model"]))
         model_dir.mkdir()
 

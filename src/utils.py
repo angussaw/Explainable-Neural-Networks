@@ -1,23 +1,15 @@
 """Utils.py contains the general functions that will be used in during the end-to-end
- pipeline of credit_score_classifier
+ pipeline of X-ray image classifier
 """
-from datetime import date
-import os
-import subprocess
+from contextlib import contextmanager
 import hashlib
-from importlib import import_module
 import logging
 import logging.config
-import time
-from typing import Callable, List, Tuple, Iterable
-from contextlib import contextmanager
-from omegaconf import OmegaConf
-
-import pandas as pd
-import numpy as np
-import yaml
 import mlflow
-import streamlit as st
+import os
+import time
+from typing import List, Tuple
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +73,7 @@ def init_mlflow(mlflow_config: dict) -> Tuple[str, str]:
 
         description (str): Description of the mlflow run, if any.
     """
-    # tracking_uri: "http://127.0.0.1:5000"
+
     mlflow_tracking_uri =  os.getenv("MLFLOW_TRACKING_URI")
     mlflow.set_tracking_uri(mlflow_tracking_uri)
     logger.info("Logging to MLFlow at %s", mlflow_tracking_uri)

@@ -1,27 +1,21 @@
-from PIL import Image
-import tensorflow as tf
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
-from typing import List
 import mlflow
 import os
-import streamlit as st
-
+import tensorflow as tf
 
 def build_model(model_architecture_params: dict, 
                 rescale_params: dict,
                 data_augmentation: dict):
-    """_summary_
+    
+    """Function to build a deep learning model with transfer
+    learning using MobileNetV2 with imagenet weights as a base model
 
     Args:
-        model_architecture_params (dict): _description_
-        rescale_params (dict): _description_
-        data_augmentation (dict): _description_
+        model_architecture_params (dict): Parameters for constructing dense layers
+        rescale_params (dict): Parameters to shape model inputs
+        data_augmentation (dict): Parameters for random data augmentation during training of model
 
     Returns:
-        _type_: _description_
+        Deep learning model that includes base model and dense layers
     """
     
     inputs = tf.keras.layers.Input(shape=(rescale_params["img_height"], rescale_params["img_height"], 3))
@@ -53,20 +47,18 @@ def build_model(model_architecture_params: dict,
 def retrieve_model(run_id: str,
                    model_uri: str,
                    model_name: str,
-                   destination_path: str):
-    """_summary_
+                   destination_path: str ="./models"):
+    """Function to retrieve a trained model from MLFLow
+    for fine tuning or for inference
 
     Args:
-        run_id (str): _description_
-        model_uri (str): _description_
-        model_name (str): _description_
-        destination_path (str): _description_
-
-    Raises:
-        mlflow_error: _description_
+        run_id (str): MLFlow run id
+        model_uri (str): MLFlow model uri
+        model_name (str): MLFlow model name
+        destination_path (str): Path to save model to
 
     Returns:
-        _type_: _description_
+        Deep learning model loaded with trained weights 
     """
 
     artifact_uri = f'mlflow-artifacts:/{run_id}/{model_uri}/artifacts/{model_name}'

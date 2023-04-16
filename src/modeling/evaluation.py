@@ -1,20 +1,18 @@
-import os
-from pathlib import Path
-import tempfile
-import numpy.typing as npt
-import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+import numpy as np
+import os
 import pandas as pd
+from pathlib import Path
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     roc_auc_score,
     accuracy_score,
     precision_score,
     recall_score,
-    confusion_matrix
 )
 from sklearn.preprocessing import label_binarize
-import numpy as np
+import tempfile
 import tensorflow as tf
 
 class Evaluator:
@@ -39,10 +37,10 @@ class Evaluator:
         history
         ):
     
-        """
+        """_summary_
 
         Returns:
-
+            _type_: _description_
         """
 
         class_names = test_data.class_names
@@ -93,6 +91,7 @@ class Evaluator:
         """_summary_
 
         Args:
+            history (_type_): _description_
             metric (_type_): _description_
         """
 
@@ -108,8 +107,15 @@ class Evaluator:
 
 
     def calculate_test_metrics(self, class_names, labels, predictions):
-        """
-        
+        """_summary_
+
+        Args:
+            class_names (_type_): _description_
+            labels (_type_): _description_
+            predictions (_type_): _description_
+
+        Returns:
+            _type_: _description_
         """
         labels_binarized = label_binarize(labels, classes=list(range(len(class_names))))
         predictions_binarized = label_binarize(predictions, classes=list(range(len(class_names))))
