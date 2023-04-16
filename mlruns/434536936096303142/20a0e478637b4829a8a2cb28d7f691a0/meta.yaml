@@ -1,0 +1,16 @@
+artifact_uri: mlflow-artifacts:/434536936096303142/20a0e478637b4829a8a2cb28d7f691a0/artifacts
+deleted_time: 1681448449840
+end_time: 1681402463653
+entry_point_name: ''
+experiment_id: '434536936096303142'
+lifecycle_stage: deleted
+run_id: 20a0e478637b4829a8a2cb28d7f691a0
+run_name: Fine tuning
+run_uuid: 20a0e478637b4829a8a2cb28d7f691a0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1681402442002
+status: 4
+tags: []
+user_id: angus

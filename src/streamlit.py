@@ -1,9 +1,9 @@
 import os
 import logging
 import hydra
+import hydra.core.global_hydra
 import streamlit as st
-from modeling.model import retrieve_model
-from modeling.evaluation import Evaluator
+from modeling import model, evaluation
 import logging
 import mlflow
 from PIL import Image
@@ -15,11 +15,13 @@ import numpy as np
 import tempfile
 from pathlib import Path
 
-
 logger = logging.getLogger(__name__)
 
-@hydra.main(config_path="../conf", config_name="streamlit.yaml")
-def main(config):
+@st.cache_resource
+def retrieve_model(run_id, model_uri, model_name, destination_path):
+    return model.retrieve_model(run_id, model_uri, model_name, destination_path)
+
+def main():
     """This main function does the following:
     - load logging config
     - loads trained model on cache
@@ -27,42 +29,37 @@ def main(config):
     - conducts inferencing on string
     - outputs prediction results on the dashboard
     """
-
+    
     logger = logging.getLogger(__name__)
     
     logger.info("Setting up logging configuration.")
-    # logger_config_path = os.path.\
-    #     join(hydra.utils.get_original_cwd(),
-    #         "conf/base/logging.yml")
-    # amlo.general_utils.setup_logging(logger_config_path)
 
     logger.info("Intialise MLFlow...")
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 
     logger.info("Loading the model...")
-    pred_model = retrieve_model(**config["inference"])
+    pred_model = retrieve_model(run_id="434536936096303142",
+                                model_uri="96eb2ef9dd4d4c2db56e348cfd6e9cef",
+                                model_name="finalized_model",
+                                destination_path="./models")
+
     pred_model_input_shape = pred_model.input_shape
     image_width = pred_model_input_shape[1]
     image_height = pred_model_input_shape[2]
-    image_channels = pred_model_input_shape[3]
     conv_layers = list(filter(lambda x: isinstance(x, tf.keras.layers.Conv2D), pred_model.layers))
 
     logger.info("Loading dashboard...")
     title = st.title('X-ray pneumonia detector')
 
     image_upload = st.file_uploader('Insert x-ray image for classification', type=['png','jpg','jpeg'])
-    last_n_layers = st.slider('Select last n convolutional layers of model to visualize Grad-CAM heatmap', 2,len(conv_layers),1)
+    last_n_layers = st.slider('Select last n convolutional layers of model to visualize Grad-CAM heatmap', 2,len(conv_layers),2)
     classes = {0:"BACTERIA", 1:"NORMAL", 2:"VIRUS"}
 
     if st.button("Generate prediction"):
         logger.info("Conducting inferencing on image input...")
-        img_pil = Image.open(image_upload)
-        img_pil = img_pil.convert("RGB")
-        img_pil = img_pil.resize((image_width,image_height))
-        pil_to_tensor = transforms.ToTensor()
-        img_tensor = pil_to_tensor(img_pil)
-        img_tensor = img_tensor.permute(1, 2, 0)
-        img_tensor = tf.image.convert_image_dtype(img_tensor, dtype=tf.float32)
+        img = tf.keras.preprocessing.image.load_img(image_upload, target_size=(image_width, image_height), color_mode="rgb")
+        img = tf.keras.preprocessing.image.img_to_array(img)
+        img_tensor = tf.image.convert_image_dtype(img, dtype=tf.float32)
 
         predicted_probas = pred_model.predict(np.expand_dims(img_tensor, axis=0))
         predicted_proba = max(predicted_probas[0])
@@ -91,7 +88,7 @@ def generate_heatmaps_per_layer(model,
                                 last_n,
                                 conv_layers):
 
-    evaluator = Evaluator(model=model)
+    evaluator = evaluation.Evaluator(model=model)
     last_n_conv_layers = conv_layers[-last_n:]
     last_n_conv_layers = list(reversed(last_n_conv_layers))
     n_plots = math.ceil(np.sqrt(len(last_n_conv_layers)))
@@ -108,10 +105,7 @@ def generate_heatmaps_per_layer(model,
 
         heatmap = evaluator.make_gradcam_heatmap(img_array = np.expand_dims(img_tensor, axis=0), conv_layer_name = conv_layer_name)
         heatmap = np.uint8(255 * heatmap)
-        img_array_resized = tf.keras.preprocessing.image.array_to_img(img_tensor)
-        img_array_resized = img_array_resized.resize((224, 224))
-        img_array_resized = tf.keras.preprocessing.image.img_to_array(img_array_resized)
-        superimposed_img = evaluator.generate_superimposed_image(img_array = img_array_resized, heatmap = heatmap)
+        superimposed_img = evaluator.generate_superimposed_image(img_array = img_tensor, heatmap = heatmap)
 
         axes[i//n_plots, i%n_plots].imshow(superimposed_img)
         axes[i//n_plots, i%n_plots].set_title(f"Layer: {conv_layer_name}")
@@ -127,3 +121,4 @@ def generate_heatmaps_per_layer(model,
 
 if __name__ == "__main__":
     main()
+    

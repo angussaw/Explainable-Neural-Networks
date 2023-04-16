@@ -50,7 +50,6 @@ def build_model(model_architecture_params: dict,
 
     return model
 
-@st.cache_resource
 def retrieve_model(run_id: str,
                    model_uri: str,
                    model_name: str,

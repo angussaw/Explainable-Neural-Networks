@@ -1,0 +1,6 @@
+artifact_location: mlflow-artifacts:/434536936096303142
+creation_time: 1681392475613
+experiment_id: '434536936096303142'
+last_update_time: 1681392475613
+lifecycle_stage: active
+name: Fine tuned model
