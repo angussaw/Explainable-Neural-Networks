@@ -1,7 +1,5 @@
 files:
-  data_dir: "C:/Users/angus/OneDrive/Desktop/AISG/Explainable-Neural-Networks/data/data"
-
-
+  data_dir: "./data/data"
 
 model:
   compile_params:
@@ -24,7 +22,7 @@ model:
   training_params:
     validation_split: 0.2
     batch_size: 300
-    n_epochs: 1
+    n_epochs: 10
 
 metrics:
   - 'accuracy'
@@ -33,7 +31,7 @@ metrics:
   - 'AUC'
 
 mlflow:
-  artifact_name: 'baseline-model'
+  artifact_name: 'Fine tuned-model'
   experiment_name: "Fine tuned model"
   run_name: "Fine tuning"
   description: 'Fine tuning baseline model'

@@ -1,67 +1,76 @@
 # Explainable-Neural-Networks
 
-
-
-
-
-# Introduction
-
 Following is the initial file structure. 
 # Folders/File structure 
 ```bash
-.
 ├── data
 │   ├── test
-│   │   ├── NORMAL
-│   │   └── PNEUMONIA
-│   ├── train
-│   │   ├── NORMAL
-│   │   └── PNEUMONIA
-│   └── val
+│   │   ├── BACTERIA
+│   │   └── NORMAL
+│   │   └── VIRUS
+│   └── train
+│       ├── BACTERIA
 │       ├── NORMAL
-│       └── PNEUMONIA
-├── conda-env.yaml
-├── src
-├── LICENSE
-├── notebooks
-└── README.md
+│       └── VIRUS
 ```
 
-# Getting Started
-
-1. Data
-
-Curl down and unzip the data to the existing repositry using the command:
 ```bash
-# download using
-wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1BLViYnohD-S4u5p1DkXp1MOlCGe02w36' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1BLViYnohD-S4u5p1DkXp1MOlCGe02w36" -O pneumonia.zip && rm -rf /tmp/cookies.txt
-# Unzip using
-unzip -q pneumonia.zip -d data/
+├── conf
+│   ├── logging.yaml
+│   └── train_config.yaml
 ```
 
-2. Environment
+```bash
+├── src
+│   ├── models
+│   ├── xray_classifier
+│   │   ├── __init__.py
+│   │   ├── utils.py
+│   │   └── modeling
+│   │       ├── __init__.py
+│   │       ├── evaluation.py
+│   │       ├── model.py
+│   │       └── training.py
+│   ├── streamlit.py
+│   └── training_pipeline.py
+```
+
+
+1. Environment
 
 Please ensure dependencies adhere to python 3.10
 ```bash
 conda env create -f conda-env.yaml
 conda activate xnn
 ```
-1. Pre-commit hook
 
-More information on precommit hook [here](https://pre-commit.com/).
-```bash
-pre-commit install
+Starting MLflow on localhost
+```cmd
+mlflow server
 ```
 
-# Contributing
-- Outstanding features are listed in the project's kanban board [here](https://github.com/users/marmal88/projects/4/views/2)!
-- Dont see an issue you want? raise an issue [here](https://github.com/marmal88/Explainable-Neural-Networks/issues)
+2. Training
 
-## Commit msg
+```cmd
+set MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+set MODE=training
+python src/training_pipeline.py
 ```
-<type>: <short summary>
-  │            │
-  │            └─⫸ Summary in present tense. Not capitalized. No period at the end.
-  │
-  └─⫸ Commit Type: build|cicd|docs|feat|fix|node|refactor|test
+
+3. Fine-tuning
+
+```cmd
+set MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+set MODE=fine-tuning
+python src/training_pipeline.py
+```
+
+4. Streamlit deployment
+
+```cmd
+set MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+set RUN_ID=434536936096303142
+set MODEL_URI=96eb2ef9dd4d4c2db56e348cfd6e9cef
+set MODEL_NAME=finalized_model
+streamlit run src/streamlit.py
 ```

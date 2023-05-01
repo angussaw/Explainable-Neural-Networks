@@ -1,5 +1,0 @@
-inference:
-  run_id: "434536936096303142"
-  model_uri: "96eb2ef9dd4d4c2db56e348cfd6e9cef"
-  model_name: "finalized_model"
-  destination_path: "./models"
