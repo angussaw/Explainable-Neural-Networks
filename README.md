@@ -41,7 +41,7 @@ Following is the initial file structure.
 Please ensure dependencies adhere to python 3.10
 ```bash
 conda env create -f conda-env.yaml
-conda activate xnn
+conda activate xnn-env
 ```
 
 Starting MLflow on localhost
